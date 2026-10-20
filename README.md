@@ -1,72 +1,114 @@
 # AstraGPU
 
-<p align="center">
-  <a href="https://github.com/Emanuelgm98/astragpu/actions/workflows/dotnet.yml"><img src="https://github.com/Emanuelgm98/astragpu/actions/workflows/dotnet.yml/badge.svg?branch=feature/mvp-local" alt="Windows CI"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
-  <img src="https://img.shields.io/badge/status-local%20MVP-orange.svg" alt="Local MVP">
-</p>
+[![Windows CI](https://github.com/Emanuelgm98/astragpu/actions/workflows/dotnet.yml/badge.svg?branch=feature/mvp-local)](https://github.com/Emanuelgm98/astragpu/actions/workflows/dotnet.yml) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**A local-first, open-source Windows companion for hardware visibility, a private game library, conservative session profiles, and honest frame-time analysis.**
+AstraGPU is a local-first Windows companion for transparent hardware diagnostics, a private executable library, conservative session profiles, reversible local backups, and honest frame-time analysis. It is not a universal FPS optimizer and it never fabricates performance results.
 
-> Local MVP validated on Windows: the solution builds in Release and the automated test suite passes. This is not a universal FPS optimizer. It does not promise performance gains or generate benchmark results. Unsupported measurements are shown as **No disponible**.
+> This document describes the implementation on `feature/mvp-local`. It intentionally distinguishes working local behavior from future integrations.
 
-## Principles
+## Architecture
 
-- Offline-first. No account, payment, forced telemetry, or cloud processing.
-- Windows facts are collected locally. Diagnostics read OS, processor count, and GPU/VRAM values from the local registry when available; temperatures and unsupported metrics remain explicitly unavailable.
-- The library stores user-selected executable paths in `%LOCALAPPDATA%\AstraGPU`.
-- Profiles are descriptive and conservative. No driver installation, overclocking, voltage changes, service edits, antivirus/firewall/anti-cheat changes, or elevation.
-- Benchmark calculations consume observed samples only. No game execution or synthetic benchmark values.
-- Backup restore validates every destination path against traversal.
-- Optional streaming is a future integration point for another PC the user owns or is authorized to use; no server or cloud compute is included.
+```mermaid
+flowchart LR
+    UI[WinUI 3 desktop app] --> HW[Hardware diagnostics]
+    UI --> OPT[Local library and profiles]
+    UI --> SEC[Backup and restore]
+    UI --> BEN[Observed benchmark analysis]
+    UI --> REP[JSON report export]
+    HW --> OS[Windows runtime and registry]
+    OPT --> DATA[%LOCALAPPDATA%/AstraGPU]
+    SEC --> DATA
+    BEN --> SAMPLES[User-provided observed samples]
+    REP --> FILES[User-selected local file]
+    STREAM[Streaming status only] -. future opt-in .-> UI
+```
+
+The solution is split into small .NET projects:
+
+| Component | Responsibility |
+| --- | --- |
+| `AstraGPU.Core` | Shared diagnostic, library, profile, sample, and report models. |
+| `AstraGPU.Hardware` | Windows facts collected without elevation; unsupported fields remain unavailable. |
+| `AstraGPU.Optimization` | Local `.exe` library and read-only conservative profile catalog. |
+| `AstraGPU.Security` | Path validation plus ZIP backup/restore. |
+| `AstraGPU.Benchmark` | Percentile calculations from observed frame-time samples and JSON report export. |
+| `AstraGPU.Streaming` | Explicit not-configured status; no listener or cloud transport. |
+| `AstraGPU.App` | WinUI 3 UI that calls the local services directly. |
+
+## Current status
+
+Implemented and connected to the UI:
+
+- Windows diagnostics for OS, architecture, logical processors, adapter name and VRAM when Windows exposes them through the local registry. Each value includes a status and source/detail; unavailable sensors are not guessed.
+- A private library under `%LOCALAPPDATA%\AstraGPU`. The selected path must exist, end in `.exe`, and begin with the PE `MZ` header. AstraGPU does not launch or execute it.
+- Conservative profiles that describe safe options only. They do not change services, registry policy, security software, drivers, firmware, clocks, voltages, or anti-cheat settings.
+- ZIP backup and restore actions. Restore validates archive paths and stays within the local data directory.
+- Benchmark report export. Empty or incomplete observations remain empty or null; no FPS is generated.
+- Offline operation after package restore. No account, telemetry endpoint, remote listener, paid cloud, or AWS integration exists.
+
+Not implemented by design: game launching, automatic FPS capture, overclocking, driver management, DLL injection, security bypasses, cloud streaming, MSI/MSIX installation, and automatic desktop shortcuts.
 
 ## Requirements
 
-- Windows 10 17763 or later (Windows 11 recommended)
-- .NET 8 SDK
-- Visual Studio 2022 with **Windows App SDK / WinUI 3** workload for the desktop app
-- Internet only to restore NuGet packages and fetch the repository; runtime MVP functions are local
+- Windows 10 version 1809 (build 17763) or later; Windows 11 is recommended.
+- .NET 8 SDK.
+- Windows App SDK / WinUI 3 tooling and Windows SDK for the desktop project. The app project currently references `Microsoft.WindowsAppSDK` 1.6.250205002 and `Microsoft.Windows.SDK.BuildTools` 10.0.26100.3916.
+- Network access is needed only to restore NuGet packages or fetch the repository; runtime features are local.
 
-The app uses WinUI 3 and `Microsoft.WindowsAppSDK`. A Windows SDK and WinUI workload are needed to build it. No system-wide SDK was installed while preparing this MVP. GitHub Actions runs on Windows and provisions .NET 8 through the hosted runner.
+## Build and test
 
-## Build
+From the repository root:
 
 ```powershell
 dotnet restore AstraGPU.sln
-dotnet test tests/AstraGPU.Tests/AstraGPU.Tests.csproj
-dotnet build src/AstraGPU.App/AstraGPU.App.csproj -c Release
+dotnet test tests/AstraGPU.Tests/AstraGPU.Tests.csproj -c Release --no-restore
+dotnet build src/AstraGPU.App/AstraGPU.App.csproj -c Release --no-restore
 ```
 
-Para preparar una carpeta distribuible sin instalar un MSI, usa `packaging/Publish-Windows.ps1`. La aplicación es WinUI 3 sin empaquetar y requiere el runtime de Windows App SDK correspondiente; no se crea un instalador silencioso ni se modifican componentes del sistema.
+For a reproducible unpackaged Windows output:
 
-Validation completed for commit `0d9f9c4`: `dotnet test` passed (4/4) and the WinUI Release build succeeded. The repository also contains a Windows CI workflow. Benchmark capture, MSI/MSIX packaging, and runtime hardware coverage remain pending.
+```powershell
+./packaging/Publish-Windows.ps1 -Configuration Release
+```
 
-## MVP features
+The script publishes `artifacts/AstraGPU-win-x64`. It is not an MSI/MSIX installer and requires the matching Windows App SDK runtime. No system-wide installer or shortcut is created.
 
-- Local diagnostics with explicit unavailable states
-- Add existing `.exe` files to a local library
-- Conservative profile catalog (descriptive only at this stage)
-- Benchmark summary math for observed frame-time samples; collection adapters remain future work
-- Backup/restore service in the Security project
-- Exportación JSON de diagnóstico y benchmark con `ReportExporter`; los valores no observados quedan nulos o explícitamente no disponibles
-- Streaming status placeholder; no network listener or remote control yet
+## Using the application
 
-## Project layout
+- **Diagnostics** captures local facts and displays `available` or `unavailable` states with detail. Missing sensors are expected and are not replaced with estimates.
+- **Library** opens a Windows file picker and stores validated executable paths only.
+- **Profiles** shows the conservative catalog. Applying risky system changes is not supported.
+- **Backup** writes a ZIP selected by the user. **Restore** reads a selected ZIP and validates every destination path.
+- **Benchmark** currently has no automatic capture adapter. **Export report** produces JSON containing the last diagnostics snapshot and a benchmark summary; without observed samples it contains no numeric FPS result.
+- **Streaming** clearly reports that no network service is configured.
 
-`Core`, `Hardware`, `Optimization`, `Benchmark`, `Streaming`, `Security`, and `App` are separate projects. `tests/AstraGPU.Tests` covers benchmark math, path traversal, and profile safety.
+## Benchmark honesty
 
-La biblioteca local acepta únicamente archivos existentes con extensión `.exe` y firma inicial `MZ`; no ejecuta ni inspecciona binarios mediante procesos. La captura de GPU/VRAM usa el inventario del registro de Windows cuando está disponible y conserva estados explícitos de no disponibilidad.
+`BenchmarkAnalyzer` accepts `BenchmarkSample` values with positive finite frame times and calculates median, P95, and 1% low FPS only when at least 100 observed samples exist. It does not run games, synthesize samples, or claim a performance improvement. Results depend on the source, scene, resolution, driver, and capture conditions. See [docs/BENCHMARKING.md](docs/BENCHMARKING.md).
 
-## Identidad visual y acceso directo
+## Security and privacy
 
-La identidad visual ilustrada queda pendiente de una nueva propuesta aprobada; el producto no muestra actualmente un logotipo impuesto.
+AstraGPU is designed to run as a standard user. It does not alter antivirus, firewall, anti-cheat, services, drivers, firmware, registry policy, clocks, or voltages. File paths are validated before library and archive operations, archive traversal is rejected, and local reports are written only to the user-selected destination. See [docs/SECURITY.md](docs/SECURITY.md).
 
-En Windows puede existir un acceso directo de escritorio llamado `AstraGPU - Proyecto.lnk`. Este acceso directo abre la carpeta del proyecto en el Explorador; no ejecuta juegos, binarios de terceros ni una compilación no verificada. Si no existe, el proyecto sigue teniendo como puntos de entrada reales este README y la solución `AstraGPU.sln`.
+No telemetry or cloud backend is present. The library and backup data remain under the local Windows profile unless the user explicitly chooses another report/backup destination.
+
+## Repository guide
+
+- [docs/MANUAL.md](docs/MANUAL.md) — user workflow and publish instructions.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — project boundaries and data flow.
+- [docs/INSTALLATION.md](docs/INSTALLATION.md) — Windows setup notes.
+- [docs/BENCHMARKING.md](docs/BENCHMARKING.md) — observed-sample methodology.
+- [docs/SECURITY.md](docs/SECURITY.md) — security boundaries.
+- [docs/LICENSING.md](docs/LICENSING.md) — licensing notes.
+- [CHANGELOG.md](CHANGELOG.md) — project history.
+
+## Roadmap
+
+1. Add a documented, licensed frame-time import adapter without launching games.
+2. Improve Windows hardware inventory with additional OS-supported sources and clear provenance.
+3. Add a reviewed packaged distribution only after reproducible signing and runtime verification are available.
+4. Design any future LAN streaming as separately authenticated, opt-in, and offline-capable; it is not part of this MVP.
 
 ## Contributing
 
-Read [architecture](docs/ARCHITECTURE.md), [security](docs/SECURITY.md), [benchmark methodology](docs/BENCHMARKING.md), [licensing](docs/LICENSING.md), and [installation](docs/INSTALLATION.md). Keep features local-first and make unsupported values explicit. Never add fabricated benchmark records or hidden machine changes.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+Keep changes local-first and evidence-based. Add tests for safety-sensitive behavior, do not add fabricated benchmark records, and do not introduce privileged or hidden machine changes. See [LICENSE](LICENSE) for the MIT license.
