@@ -15,9 +15,10 @@ public sealed partial class MainWindow : Window
     private readonly IHardwareDiagnostics _hardware = new WindowsDiagnostics();
     private readonly string _dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AstraGPU");
     private readonly BackupService _backup = new();
+    private readonly DiagnosticHistory _history;
     private HardwareSnapshot? _lastDiagnostics;
     private string _page = "dashboard";
-    public MainWindow() { InitializeComponent(); }
+    public MainWindow() { InitializeComponent(); _history = new DiagnosticHistory(_dataDirectory); }
     private void Show(string title, string body, string action, string page) { Heading.Text = title; ContentTitle.Text = title; Content.Text = body; ActionButton.Content = action; _page = page; Status.Text = ""; }
     private void OnDashboard(object s, RoutedEventArgs e) => Show("Optimización local, con evidencia", "Diagnostica el equipo, organiza tus juegos y exporta datos locales. No se aplican cambios ocultos.", "Ejecutar diagnóstico local", "dashboard");
     private void OnDiagnostics(object s, RoutedEventArgs e) => Show("Diagnóstico", "Fuentes: APIs/runtime de Windows y registro del sistema. Sensores no compatibles aparecen como No disponible.", "Actualizar diagnóstico", "diagnostics");
@@ -34,6 +35,7 @@ public sealed partial class MainWindow : Window
             if (_page is "diagnostics" or "dashboard")
             {
                 _lastDiagnostics = await _hardware.CaptureAsync();
+                await _history.AppendAsync(_lastDiagnostics);
                 Content.Text = string.Join("\n", _lastDiagnostics.Values.Select(v => $"{v.Name}: {v.Value} [{v.Status}] — {v.Detail ?? "Fuente local"}"));
                 Status.Text = $"Capturado {_lastDiagnostics.CapturedAt.ToLocalTime():g}. Sin elevación.";
             }

@@ -40,6 +40,7 @@ The solution is split into small .NET projects:
 Implemented and connected to the UI:
 
 - Windows diagnostics for OS, architecture, logical processors, adapter name and VRAM when Windows exposes them through the local registry. Each value includes a status and source/detail; unavailable sensors are not guessed.
+- A bounded local diagnostic history keeps the latest 50 user-requested snapshots in `diagnostics-history.json`, with no telemetry or remote upload.
 - A private library under `%LOCALAPPDATA%\AstraGPU`. The selected path must exist, end in `.exe`, and begin with the PE `MZ` header. AstraGPU does not launch or execute it.
 - Conservative profiles that describe safe options only. They do not change services, registry policy, security software, drivers, firmware, clocks, voltages, or anti-cheat settings.
 - ZIP backup and restore actions. Restore validates archive paths and stays within the local data directory.
@@ -76,6 +77,7 @@ The script publishes `artifacts/AstraGPU-win-x64`. It is not an MSI/MSIX install
 ## Using the application
 
 - **Diagnostics** captures local facts and displays `available` or `unavailable` states with detail. Missing sensors are expected and are not replaced with estimates.
+- Each diagnostic capture is also retained locally as an audit history of the latest 50 snapshots; it can be included as the last snapshot in an exported report.
 - **Library** opens a Windows file picker and stores validated executable paths only.
 - **Profiles** shows the conservative catalog. Applying risky system changes is not supported.
 - **Backup** writes a ZIP selected by the user. **Restore** reads a selected ZIP and validates every destination path.

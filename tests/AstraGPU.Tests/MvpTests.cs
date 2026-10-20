@@ -1,5 +1,6 @@
 using AstraGPU.Benchmark;
 using AstraGPU.Core;
+using AstraGPU.Hardware;
 using AstraGPU.Optimization;
 using AstraGPU.Security;
 using Xunit;
@@ -12,4 +13,5 @@ public class MvpTests
     [Fact] public void PathTraversalIsRejected() { var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()); Assert.Throws<UnauthorizedAccessException>(() => PathGuard.RequireChildPath(root, Path.Combine(root, "..", "escape.txt"))); }
     [Fact] public void ProfilesAreConservativeAndDoNotChangeServices() { Assert.All(new ProfileCatalog().GetProfiles(), p => Assert.DoesNotContain(p.Settings.Keys, k => k.Contains("service", StringComparison.OrdinalIgnoreCase))); }
     [Fact] public async Task LibraryRejectsNonPeExecutables() { var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()); Directory.CreateDirectory(root); var file = Path.Combine(root, "fake.exe"); await File.WriteAllTextAsync(file, "not a PE"); await Assert.ThrowsAsync<InvalidDataException>(() => new LocalLibrary(root).AddAsync("fake", file)); Directory.Delete(root, true); }
+    [Fact] public async Task DiagnosticHistoryIsBoundedAndLocal() { var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()); var history = new DiagnosticHistory(root); for (var i = 0; i < 55; i++) await history.AppendAsync(new HardwareSnapshot(DateTimeOffset.UtcNow, [new DiagnosticValue("fixture", i.ToString(), "available")])); var entries = await history.GetAsync(); Assert.Equal(50, entries.Count); Assert.Equal("5", entries[0].Values[0].Value); Assert.True(File.Exists(Path.Combine(root, "diagnostics-history.json"))); Directory.Delete(root, true); }
 }
