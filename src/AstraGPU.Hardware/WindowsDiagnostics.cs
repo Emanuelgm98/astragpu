@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Security;
 using Microsoft.Win32;
 using AstraGPU.Core;
 namespace AstraGPU.Hardware;

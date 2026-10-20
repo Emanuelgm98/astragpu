@@ -31,6 +31,8 @@ dotnet test tests/AstraGPU.Tests/AstraGPU.Tests.csproj
 dotnet build src/AstraGPU.App/AstraGPU.App.csproj -c Release
 ```
 
+Para preparar una carpeta distribuible sin instalar un MSI, usa `packaging/Publish-Windows.ps1`. La aplicación es WinUI 3 sin empaquetar y requiere el runtime de Windows App SDK correspondiente; no se crea un instalador silencioso ni se modifican componentes del sistema.
+
 The current authoring environment did not have `dotnet`, MSBuild, or CMake available, so no local build or test result is claimed. CI is configured for Windows.
 
 ## MVP features
