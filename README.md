@@ -1,13 +1,23 @@
-# AstraGPU
+<p align="center">
+  <img src="assets/branding/astragpu-griffin.svg" alt="AstraGPU golden griffin" width="180">
+</p>
+
+<h1 align="center">AstraGPU</h1>
+
+<p align="center">
+  <a href="https://github.com/Emanuelgm98/astragpu/actions/workflows/windows.yml"><img src="https://github.com/Emanuelgm98/astragpu/actions/workflows/windows.yml/badge.svg?branch=feature/mvp-local" alt="Windows CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/status-local%20MVP-orange.svg" alt="Local MVP">
+</p>
 
 **A local-first, open-source Windows companion for hardware visibility, a private game library, conservative session profiles, and honest frame-time analysis.**
 
-> Early MVP scaffold. This is not a universal FPS optimizer. It does not promise performance gains or generate benchmark results. Unsupported measurements are shown as **No disponible**.
+> Local MVP validated on Windows: the solution builds in Release and the automated test suite passes. This is not a universal FPS optimizer. It does not promise performance gains or generate benchmark results. Unsupported measurements are shown as **No disponible**.
 
 ## Principles
 
 - Offline-first. No account, payment, forced telemetry, or cloud processing.
-- Windows facts are collected locally. The initial diagnostics report OS and processor count; GPU model, VRAM and temperatures explicitly remain unavailable until a dependable built-in source exists.
+- Windows facts are collected locally. Diagnostics read OS, processor count, and GPU/VRAM values from the local registry when available; temperatures and unsupported metrics remain explicitly unavailable.
 - The library stores user-selected executable paths in `%LOCALAPPDATA%\AstraGPU`.
 - Profiles are descriptive and conservative. No driver installation, overclocking, voltage changes, service edits, antivirus/firewall/anti-cheat changes, or elevation.
 - Benchmark calculations consume observed samples only. No game execution or synthetic benchmark values.
@@ -33,7 +43,7 @@ dotnet build src/AstraGPU.App/AstraGPU.App.csproj -c Release
 
 Para preparar una carpeta distribuible sin instalar un MSI, usa `packaging/Publish-Windows.ps1`. La aplicación es WinUI 3 sin empaquetar y requiere el runtime de Windows App SDK correspondiente; no se crea un instalador silencioso ni se modifican componentes del sistema.
 
-The current authoring environment did not have `dotnet`, MSBuild, or CMake available, so no local build or test result is claimed. CI is configured for Windows.
+Validation completed for commit `0d9f9c4`: `dotnet test` passed (4/4) and the WinUI Release build succeeded. The repository also contains a Windows CI workflow. Benchmark capture, MSI/MSIX packaging, and runtime hardware coverage remain pending.
 
 ## MVP features
 
