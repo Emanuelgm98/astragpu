@@ -2,7 +2,7 @@
 
 ## Recurso reutilizable
 
-`assets/branding/astragpu-griffin.svg` es el recurso vectorial base de la identidad: un grifo heráldico dorado sobre azul marino, adecuado para README, iconos de navegación, documentación y futuras superficies de la aplicación.
+La propuesta anterior del grifo dorado fue retirada de la presentación del proyecto por decisión del usuario. AstraGPU queda temporalmente sin logotipo oficial hasta aprobar una nueva propuesta visual.
 
 El diseño es una interpretación original creada dentro del proyecto. Su origen conceptual es la referencia visual recibida del usuario en Telegram el 2026-10-20 (`telegram_files/2026-10-20/photo_AQADSgxrG0GAuEZ-.webp`). No se incorporaron imágenes externas, tipografías externas ni material de terceros.
 

@@ -1,8 +1,4 @@
-<p align="center">
-  <img src="assets/branding/astragpu-griffin.svg" alt="AstraGPU golden griffin" width="180">
-</p>
-
-<h1 align="center">AstraGPU</h1>
+# AstraGPU
 
 <p align="center">
   <a href="https://github.com/Emanuelgm98/astragpu/actions/workflows/dotnet.yml"><img src="https://github.com/Emanuelgm98/astragpu/actions/workflows/dotnet.yml/badge.svg?branch=feature/mvp-local" alt="Windows CI"></a>
@@ -63,7 +59,7 @@ La biblioteca local acepta únicamente archivos existentes con extensión `.exe`
 
 ## Identidad visual y acceso directo
 
-La identidad visual reutilizable está en [docs/BRANDING.md](docs/BRANDING.md) y su recurso vectorial en `assets/branding/astragpu-griffin.svg`. Es una interpretación original basada en el sello de referencia recibido del usuario; no usa imágenes externas.
+La identidad visual ilustrada queda pendiente de una nueva propuesta aprobada; el producto no muestra actualmente un logotipo impuesto.
 
 En Windows puede existir un acceso directo de escritorio llamado `AstraGPU - Proyecto.lnk`. Este acceso directo abre la carpeta del proyecto en el Explorador; no ejecuta juegos, binarios de terceros ni una compilación no verificada. Si no existe, el proyecto sigue teniendo como puntos de entrada reales este README y la solución `AstraGPU.sln`.
 
