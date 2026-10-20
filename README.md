@@ -5,7 +5,7 @@
 <h1 align="center">AstraGPU</h1>
 
 <p align="center">
-  <a href="https://github.com/Emanuelgm98/astragpu/actions/workflows/windows.yml"><img src="https://github.com/Emanuelgm98/astragpu/actions/workflows/windows.yml/badge.svg?branch=feature/mvp-local" alt="Windows CI"></a>
+  <a href="https://github.com/Emanuelgm98/astragpu/actions/workflows/dotnet.yml"><img src="https://github.com/Emanuelgm98/astragpu/actions/workflows/dotnet.yml/badge.svg?branch=feature/mvp-local" alt="Windows CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
   <img src="https://img.shields.io/badge/status-local%20MVP-orange.svg" alt="Local MVP">
 </p>
